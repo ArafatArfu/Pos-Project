@@ -12,7 +12,7 @@ use Psy\CodeCleaner\ReturnTypePass;
 
 class UserController extends Controller
 {
-
+                //Pages
     function RegistrationPage(Request $request){
         return view('pages.auth.registration-page');
     }
@@ -33,6 +33,9 @@ class UserController extends Controller
         return view('pages.auth.reset-password-page');
     }
 
+    function ProfilePage(Request $request){
+        return view('pages.dashboard.profile-page');
+    }
 
                 //Backend & API Method
     function UserRegistration(Request $request){
@@ -60,20 +63,27 @@ class UserController extends Controller
     function userLogin(Request $request){
         $count= user::where('email',$request->input('email'))
                     ->where('password',$request->input('password'))
-                    ->count();
-        if($count==1){
-            $token= JWTToken::CreateToken($request->input('email'));
+                    ->select('id')->first();
+        if($count!==null){
+            $token= JWTToken::CreateToken($request->input('email'),$count->id);
             return response()->json([
                 'status'=>'success',
                 'message'=>'user login successful'
                 // 'token'=>$token
             ],status:200)->cookie('token',$token,60*24*30);
         }
+                //me:Extra cn added
+        else if( user::where('password','!=',$count)){
+            return response()->json([
+                'message'=>'Invalid password',
+            ]);
+        }
+                //extra cn end
         else{
             return response()->json([
                 'status'=>'failed',
                 'message'=>'unauthorized'
-            ]);
+            ],401);
         }
     }
 
@@ -89,7 +99,6 @@ class UserController extends Controller
             'status'=>'success',
             'message'=>'4 Digit otp code has been send to your email'
            ],status:200);
-
         }
         else{
             return response()->json([
@@ -100,6 +109,7 @@ class UserController extends Controller
 
     }
 
+    
     function VerifyOTP(Request $request){
         $email= $request->input('email');
         $otp= $request->input('otp');
@@ -141,5 +151,34 @@ class UserController extends Controller
                 'message'=>'something went wrong'
             ],status:401);
         }
+    }
+
+             //logout
+    function UserLogout(Request $request){
+        return redirect('/userLogin')->cookie('token','',-1);
+    }
+            //profile
+    function UserProfile(Request $request){
+        $email= $request->header('email');
+        $user= user::where('email','=',$email)->first();
+        return response()->json([
+            'status'=>'success',
+            'message'=>'Request successful',
+            'data'=>$user
+        ],status:200);
+    }
+
+    function UserUpdate(Request $request){
+        $email= $request->header('email');
+        user::where('email','=',$email)->update([
+            'firstName'=>$request->input('firstName'),
+            'lastName'=>$request->input('lastName'),
+            'mobile'=>$request->input('mobile'),
+            'password'=>$request->input('password')
+        ]);
+        return response()->json([
+            'status'=>'success',
+            'message'=>'request successful'
+        ],status:200);
     }
 }

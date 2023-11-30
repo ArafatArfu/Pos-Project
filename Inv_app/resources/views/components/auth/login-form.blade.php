@@ -25,13 +25,13 @@
 </div>
 
 
-{{-- <script>
 
-    async function SubmitLogin(){
+<script>
 
-        let email= document.getElementById('email').value;
-        let password= document.getElementById('password').value;
-
+    async function SubmitLogin() {
+        let email=document.getElementById('email').value;
+        let password=document.getElementById('password').value;
+        
         if(email.length===0){
             errorToast("Email is required");
         }
@@ -40,42 +40,23 @@
         }
         else{
             showLoader();
-            let res=await axios.post("/user-login",{email:email,password:password});
-            hideLoader()
+            let res=await axios.post("/user-login",{
+                email:email,
+                password:password
+            });
+            hideLoader();
+
             if(res.status===200 && res.data['status']==='success'){
+                successToast(res.data['message']);
+                setTimeout(function(){
                 window.location.href="/dashboard";
+                },2000);
             }
             else{
                 errorToast(res.data['message']);
             }
-
         }
-    }
-
-</script> --}}
-<script>
-
-    async function SubmitLogin() {
-        let email=document.getElementById('email').value;
-              let password=document.getElementById('password').value;
-
-              if(email.length===0){
-                  errorToast("Email is required");
-              }
-              else if(password.length===0){
-                  errorToast("Password is required");
-              }
-              else{
-                  showLoader();
-                  let res=await axios.post("/user-login",{email:email, password:password});
-                  hideLoader()
-                  if(res.status===200 && res.data['status']==='success'){
-                      window.location.href="/dashboard";
-                  }
-                  else{
-                      errorToast(res.data['message']);
-                  }
-              }
       }
 
   </script>
+

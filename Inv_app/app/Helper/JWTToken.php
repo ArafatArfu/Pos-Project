@@ -10,13 +10,14 @@ use PhpParser\Node\Stmt\Catch_;
 class JWTToken{
 
                 //createToken
-    public static function CreateToken($userEmail):string{
+    public static function CreateToken($userEmail,$userID):string{
         $key= env(key:'JWT_KEY');
         $payload=[
             'iss'=>'Laravel-JWT',
             'iat'=>time(),
             'exp'=>time()+60*60,
-            'userEmail'=>$userEmail
+            'userEmail'=>$userEmail,
+            'userId'=>$userID
         ];
         return JWT::encode($payload,$key, 'HS256');
     }
@@ -28,7 +29,8 @@ class JWTToken{
             'iss'=>'Laravel-JWT',
             'iat'=>time(),
             'exp'=>time()+60*5,
-            'userEmail'=>$userEmail
+            'userEmail'=>$userEmail,
+            'userId'=>'0'
         ];
         return JWT::encode($payload,$key, 'HS256');
     }
@@ -36,11 +38,16 @@ class JWTToken{
 
 
                 //VerifyORDecode token
-    public static function VerifyToken($token){
+    public static function VerifyToken($token):object|string{
         try{
-            $key= env(key:'JWT_KEY');
-            $decoded= JWT::decode($token, new key($key, 'HS256'));
-            return $decoded->userEmail;
+            if($token==null){
+                return 'unauthorized';
+            }
+            else{
+                $key= env(key:'JWT_KEY');
+                $decode= JWT::decode($token, new key($key, 'HS256'));
+                return $decode;
+            }
         }
         catch(Exception $e){
             return 'unauthorized';
